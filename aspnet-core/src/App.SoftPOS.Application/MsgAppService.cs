@@ -9,6 +9,8 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace App.SoftPOS
 {
@@ -23,16 +25,54 @@ namespace App.SoftPOS
             // DeletePolicyName = SourceCodePermissions.Types.Delete;
         }
 
-        public async Task<string> GetResponse()
+        //Read Text File containing message (API)
+        //public async Task<string> GetResponse(string filename)
+        //{
+        //    //temporary hardcoded for now
+        //    if (filename == "3064444")
+        //    {
+        //        return null;
+        //    }
+        //    int resp = int.Parse(filename) + 100;
+        //    string filesentName = resp.ToString() + ".txt";
+        //    string path = @"D:\Projects\SoftPOS\SourceCode\aspnet-core\src\App.SoftPOS.HttpApi.Host\DownloadParameters\" + filesentName;
+        //    var buffer = "";
+        //    string readText = await File.ReadAllTextAsync(path);
+        //    buffer += readText;
+        //    return buffer;
+        //}
+
+        //request download parameters
+        public string PostMobileRequest(MobileRequest json)
         {
-            string path = @"D:\SoftPos\Documents\test.txt";
-            var buffer = "";
-            string readText = await File.ReadAllTextAsync(path);
-            buffer += readText;
-            return buffer;
+            //get required response form file-system storing data
+            var msg = Response(json.Last_Message_Number);
+            //parse isomsg to json
+            string mti = "";
+            var DE = ISOMsgHex(msg, mti: out mti);
+            ISO8583Packet packet = new ISO8583Packet();
+            var message = packet.ISOMobileMessage(DE, mti: mti);
+            var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+            string jsonString = JsonSerializer.Serialize(message, options);
+
+            return jsonString;
+        }
+        
+        //get JSON message for mobile app (API)
+        public string GetMessage(string msg)
+        {
+            string mti = "";
+            var DE = ISOMsgHex(msg, mti: out mti);
+            ISO8583Packet packet = new ISO8583Packet();
+            var message = packet.ISOMobileMessage(DE, mti: mti);
+            var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+            string jsonString = JsonSerializer.Serialize(message, options);
+
+            return jsonString; 
         }
 
-        public async Task<string[]> GetISOMsgHex(string msg)
+        //get DE array of message (API)
+        public string[] GetISOMsgHex(string msg)
         {
             //get bitmap (primary & secondary)
             //mti, header                        
@@ -51,7 +91,8 @@ namespace App.SoftPOS
             }
             return packet.DE;
         }
-
+        
+        //test method to check hex to arabic (API)
         public string GetArabicString (string hexString)
         {
             if (hexString == null)
@@ -67,7 +108,7 @@ namespace App.SoftPOS
               
             return Encoding.GetEncoding("ISO-8859-6").GetString(bytes);
         }
-
+        //test method to check the bitmap of message (API)
         public string[] GetBitmapValues(string bitmap)
         {
             bitmap = ConvertHex(bitmap);
@@ -90,7 +131,7 @@ namespace App.SoftPOS
             }
             return DE;
         }
-
+        //get convert from Hex to Ascii (API)
         public string GetConvertHex(string hexString)
         {
             try
@@ -110,7 +151,50 @@ namespace App.SoftPOS
             return string.Empty;
         }
 
-        public static string ConvertHex(string hexString)
+
+        //internal methods --------------------------
+
+        //Read Text File containing message (API)
+        private string Response(string filename)
+        {
+            //temporary hardcoded for now
+            if (filename == "3064444")
+            {
+                return null;
+            }
+            int resp = int.Parse(filename) + 100;
+            string filesentName = resp.ToString() + ".txt";
+            string path = @"D:\Projects\SoftPOS\SourceCode\aspnet-core\src\App.SoftPOS.HttpApi.Host\DownloadParameters\" + filesentName;
+            var buffer = "";
+            string readText = File.ReadAllText(path);
+            buffer += readText;
+            return buffer;
+        }
+
+        //internal method for DE array of message to be used in Mobile app
+        private string[] ISOMsgHex(string msg, out string mti)
+        {
+            //get bitmap (primary & secondary)
+            //mti, header                        
+            string MsgHeaderHex = msg.Substring(0, 14); string mtiHex = msg.Substring(14, 8);
+            mti = ConvertHex(mtiHex);
+            msg = msg.RemovePreFix(MsgHeaderHex);
+            msg = msg.RemovePreFix(mtiHex);
+            //init ISO8583 Packet
+            var packet = new ISO8583Packet();
+            //get DE values
+            packet.DE = GetBitmapValues(msg.Substring(0, 64));
+
+            for (int i = 0; i < packet.DE.Length; i++)
+            {
+                if (packet.DE[i] == "Value")
+                    msg = packet.Data_Element_Type(packet.Data_Elements[i + 1], msg, out packet.DE[i]);
+            }
+            return packet.DE;
+        }
+
+        //convert from hex to ascii
+        private static string ConvertHex(string hexString)
         {
             try
             {
@@ -129,58 +213,58 @@ namespace App.SoftPOS
             return string.Empty;
         }
 
-        public async Task<string> GetDE72(string hexString)
-        {
-            string ascii = string.Empty;
-            try
-            {
-                for(int i = 0; i < hexString.Length-2; i+=2)
-                {
-                    ascii += HexToUnicode(hexString.Substring(i,2));
-                }
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine(ex.Message);
-            }
+        //public async Task<string> GetDE72(string hexString)
+        //{
+        //    string ascii = string.Empty;
+        //    try
+        //    {
+        //        for(int i = 0; i < hexString.Length-2; i+=2)
+        //        {
+        //            ascii += HexToUnicode(hexString.Substring(i,2));
+        //        }
+        //    }
+        //    catch (Exception ex) 
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //    }
             
-            return ascii;
-        }
+        //    return ascii;
+        //}
 
-        public static char HexToUnicode(string hex)
-        {
-            byte[] bytes = HexToBytes(hex);
-            Encoding enc = Encoding.GetEncoding("UTF-8");
-            var decodedItem = enc.GetString(bytes).ToCharArray();
-            char c = decodedItem[0];
-            if (bytes.Length == 1)
-            {
-                c = (char)bytes[0];
-            }
-            else if (bytes.Length == 2)
-            {
-                c = (char)((bytes[0] << 8) + bytes[1]);
-            }
-            else
-            {
-                throw new Exception(hex);
-            }
+        //public static char HexToUnicode(string hex)
+        //{
+        //    byte[] bytes = HexToBytes(hex);
+        //    Encoding enc = Encoding.GetEncoding("UTF-8");
+        //    var decodedItem = enc.GetString(bytes).ToCharArray();
+        //    char c = decodedItem[0];
+        //    if (bytes.Length == 1)
+        //    {
+        //        c = (char)bytes[0];
+        //    }
+        //    else if (bytes.Length == 2)
+        //    {
+        //        c = (char)((bytes[0] << 8) + bytes[1]);
+        //    }
+        //    else
+        //    {
+        //        throw new Exception(hex);
+        //    }
 
-            return c;
-        }
+        //    return c;
+        //}
         
-        public static byte[] HexToBytes(string hex)
-        {
-            hex = hex.Trim();
+        //public static byte[] HexToBytes(string hex)
+        //{
+        //    hex = hex.Trim();
 
-            byte[] bytes = new byte[hex.Length / 2];
+        //    byte[] bytes = new byte[hex.Length / 2];
 
-            for (int index = 0; index < bytes.Length; index++)
-            {
-                bytes[index] = Convert.ToByte(hex.Substring(index * 2, 2), 16);
-            }
+        //    for (int index = 0; index < bytes.Length; index++)
+        //    {
+        //        bytes[index] = Convert.ToByte(hex.Substring(index * 2, 2), 16);
+        //    }
 
-            return bytes;
-        }
+        //    return bytes;
+        //}
     }
 }
