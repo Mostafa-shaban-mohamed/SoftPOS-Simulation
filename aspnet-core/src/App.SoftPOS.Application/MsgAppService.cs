@@ -47,9 +47,8 @@ namespace App.SoftPOS
             //get required response form file-system storing data
             var msg = Response(json.Last_Message_Number);
             //parse isomsg to json
-            string mti = "";
-            var DE = ISOMsgHex(msg, mti: out mti);
-            ISO8583Packet packet = new ISO8583Packet();
+            var DE = ISOMsgHex(msg, mti: out string mti);
+            ISO8583Packet packet = new();
             var message = packet.ISOMobileMessage(DE, mti: mti);
             var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
             string jsonString = JsonSerializer.Serialize(message, options);
@@ -92,7 +91,7 @@ namespace App.SoftPOS
         }
         
         //test method to check hex to arabic (API)
-        public string GetArabicString (string hexString)
+        public static string GetArabicString (string hexString)
         {
             if (hexString == null)
                 throw new ArgumentNullException("hexString");
@@ -108,7 +107,7 @@ namespace App.SoftPOS
             return Encoding.GetEncoding("ISO-8859-6").GetString(bytes);
         }
         //test method to check the bitmap of message (API)
-        public string[] GetBitmapValues(string bitmap)
+        public static string[] GetBitmapValues(string bitmap)
         {
             bitmap = ConvertHex(bitmap);
             //convert hex string to binary string
@@ -152,33 +151,33 @@ namespace App.SoftPOS
 
         //internal methods --------------------------
 
-        //Read Text File containing message (API)
-        private string Response(string filename)
+        //Read Text File containing message (API) ## depends on file-system storing records
+        private static string? Response(string filename)
         {
             //fetch current record number and total number of records
             filename = filename.RemovePreFix("306");
             var certainRecordNumber = filename.Substring(0, filename.Length / 2); 
             var totalRecords = filename.RemovePreFix(certainRecordNumber);
-            //temporary hardcoded for now
-            //if (filename == "3064444")
-            if(certainRecordNumber == totalRecords) //check if this is the last record
+            //check if this is the last record
+            if (certainRecordNumber == totalRecords) 
             {
                 return null;
             }
             int resp = int.Parse(certainRecordNumber) + 1;
-            string filesentName = "306" + resp.ToString("D"+totalRecords.Length.ToString()) + totalRecords + ".txt";
-            string path = @"D:\Projects\SoftPOS\SourceCode\aspnet-core\src\App.SoftPOS.HttpApi.Host\DownloadParameters\" + filesentName; //get relative path not absolute path ?????
-            //var buffer = "";
-            StringBuilder buffer = new StringBuilder();
-            string readText = File.ReadAllText(path);
-            //buffer += readText;
-            buffer.Append(readText);
-            //return buffer;
-            return buffer.ToString();
+            string filesentName = "306" + resp.ToString("D" + totalRecords.Length.ToString()) + totalRecords + ".txt";
+            //relative Path to Download Parameters files
+            var relativePath = Directory.GetCurrentDirectory() + "\\DownloadParameters\\" + filesentName; 
+            //fetch data from file
+            string readText = File.ReadAllText(relativePath);
+            //is text valid
+            if (string.IsNullOrEmpty(readText))
+                return null;
+
+            return readText;
         }
 
         //internal method for DE array of message to be used in Mobile app
-        private string[] ISOMsgHex(string msg, out string mti)
+        private static string[] ISOMsgHex(string msg, out string mti)
         {
             //get bitmap (primary & secondary)
             //mti, header                        
