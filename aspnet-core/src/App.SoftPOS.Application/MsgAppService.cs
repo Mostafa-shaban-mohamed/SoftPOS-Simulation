@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using App.SoftPOS.ISOMsgs;
-using BIM_ISO8583.NET;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -151,24 +150,31 @@ namespace App.SoftPOS
             return string.Empty;
         }
 
-
         //internal methods --------------------------
 
         //Read Text File containing message (API)
         private string Response(string filename)
         {
+            //fetch current record number and total number of records
+            filename = filename.RemovePreFix("306");
+            var certainRecordNumber = filename.Substring(0, filename.Length / 2); 
+            var totalRecords = filename.RemovePreFix(certainRecordNumber);
             //temporary hardcoded for now
-            if (filename == "3064444")
+            //if (filename == "3064444")
+            if(certainRecordNumber == totalRecords) //check if this is the last record
             {
                 return null;
             }
-            int resp = int.Parse(filename) + 100;
-            string filesentName = resp.ToString() + ".txt";
-            string path = @"D:\Projects\SoftPOS\SourceCode\aspnet-core\src\App.SoftPOS.HttpApi.Host\DownloadParameters\" + filesentName;
-            var buffer = "";
+            int resp = int.Parse(certainRecordNumber) + 1;
+            string filesentName = "306" + resp.ToString("D"+totalRecords.Length.ToString()) + totalRecords + ".txt";
+            string path = @"D:\Projects\SoftPOS\SourceCode\aspnet-core\src\App.SoftPOS.HttpApi.Host\DownloadParameters\" + filesentName; //get relative path not absolute path ?????
+            //var buffer = "";
+            StringBuilder buffer = new StringBuilder();
             string readText = File.ReadAllText(path);
-            buffer += readText;
-            return buffer;
+            //buffer += readText;
+            buffer.Append(readText);
+            //return buffer;
+            return buffer.ToString();
         }
 
         //internal method for DE array of message to be used in Mobile app
@@ -184,7 +190,7 @@ namespace App.SoftPOS
             var packet = new ISO8583Packet();
             //get DE values
             packet.DE = GetBitmapValues(msg.Substring(0, 64));
-
+            //replace value string with actual value of this field
             for (int i = 0; i < packet.DE.Length; i++)
             {
                 if (packet.DE[i] == "Value")
