@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="BIM_ISO8583" Version="1.0.0" />
     <PackageReference Include="CSharp8583" Version="1.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Volo.Abp.Account.Application" Version="7.1.0" />
     <PackageReference Include="Volo.Abp.Identity.Application" Version="7.1.0" />
     <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="7.1.0" />

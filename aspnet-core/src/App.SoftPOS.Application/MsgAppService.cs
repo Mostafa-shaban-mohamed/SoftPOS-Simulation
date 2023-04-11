@@ -10,6 +10,8 @@ using Volo.Abp.Domain.Repositories;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using Polly.Caching;
 
 namespace App.SoftPOS
 {
@@ -42,27 +44,32 @@ namespace App.SoftPOS
         //}
 
         //request download parameters
-        public string PostMobileRequest(MobileRequest json)
+        public string? PostMobileRequest(MobileRequest json)
         {
             //get required response form file-system storing data
             var msg = Response(json.Last_Message_Number);
-            //parse isomsg to json
-            var DE = ISOMsgHex(msg, mti: out string mti);
-            ISO8583Packet packet = new();
-            var message = packet.ISOMobileMessage(DE, mti: mti);
-            var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-            string jsonString = JsonSerializer.Serialize(message, options);
+            //is msg valid
+            if (!string.IsNullOrEmpty(msg))
+            {
+                var DE = ISOMsgHex(msg, mti: out string mti);
+                ISO8583Packet packet = new();
+                var message = packet.ISOMobileMessage(DE, mti: mti);
+                var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+                string jsonString = JsonSerializer.Serialize(message, options);
 
-            return jsonString;
+                return jsonString;
+            }
+            return null;
         }
         
         //get JSON message for mobile app (API)
-        public string GetMessage(string msg)
+        public string PostMessage([FromBody] string msg)
         {
-            string mti = "";
-            var DE = ISOMsgHex(msg, mti: out mti);
+            var DE = ISOMsgHex(msg, mti: out string mti);
+            //get Message object returned with values
             ISO8583Packet packet = new ISO8583Packet();
             var message = packet.ISOMobileMessage(DE, mti: mti);
+            //remove all properties with value = null
             var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
             string jsonString = JsonSerializer.Serialize(message, options);
 
@@ -130,7 +137,7 @@ namespace App.SoftPOS
             return DE;
         }
         //get convert from Hex to Ascii (API)
-        public string GetConvertHex(string hexString)
+        public static string GetConvertHex(string hexString)
         {
             try
             {
@@ -154,10 +161,19 @@ namespace App.SoftPOS
         //Read Text File containing message (API) ## depends on file-system storing records
         private static string? Response(string filename)
         {
-            //fetch current record number and total number of records
             filename = filename.RemovePreFix("306");
-            var certainRecordNumber = filename.Substring(0, filename.Length / 2); 
-            var totalRecords = filename.RemovePreFix(certainRecordNumber);
+            //fetch current record number
+            var certainRecordNumber = filename.Substring(0, filename.Length / 2);
+            // total number of records
+            var totalRecords = "";
+            if (filename == "0000") //temprarily hardcoded
+            {
+                totalRecords = "44"; 
+            }
+            else
+            {
+                totalRecords = filename.RemovePreFix(certainRecordNumber);
+            }
             //check if this is the last record
             if (certainRecordNumber == totalRecords) 
             {

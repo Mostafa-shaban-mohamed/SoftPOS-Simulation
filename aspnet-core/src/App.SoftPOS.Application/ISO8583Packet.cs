@@ -651,7 +651,7 @@ namespace App.SoftPOS
                 {
                     if (!string.IsNullOrEmpty(s.Value))
                     {
-                        ascii += s.Value + "\n\n";
+                        ascii += s.Value + "\n\n"; //end of segment
                     }
                 }
                 return ascii;
