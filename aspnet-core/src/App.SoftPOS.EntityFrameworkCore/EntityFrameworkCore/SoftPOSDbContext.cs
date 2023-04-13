@@ -16,6 +16,17 @@ using App.SoftPOS.MTIs;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using App.SoftPOS.DownloadParameters;
 using App.SoftPOS.ISOMsgs;
+using App.SoftPOS.PosTerminals;
+using App.SoftPOS.Categories;
+using App.SoftPOS.RetailerDatas;
+using App.SoftPOS.CardSchemas;
+using App.SoftPOS.MessageTexts;
+using App.SoftPOS.TerminalConnections;
+using App.SoftPOS.DeviceSpecifics;
+using App.SoftPOS.AIDLists;
+using App.SoftPOS.AIDDatas;
+using App.SoftPOS.RevokeCertificates;
+using App.SoftPOS.PublicKeys;
 
 namespace App.SoftPOS.EntityFrameworkCore;
 
@@ -59,6 +70,23 @@ public class SoftPOSDbContext :
     public DbSet<DownloadParameter> DownloadParameters { get; set; }
     public DbSet<ISOMsg> ISOMsgs { get; set; }
 
+    //Segments
+    public DbSet<PosTerminal> PosTerminals { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<RD_Seg01> RD_Seg01s { get; set; }
+    public DbSet<RD_Seg02> RD_Seg02s { get; set; }
+    public DbSet<RD_Seg03> RD_Seg03s { get; set; }
+    public DbSet<RD_Seg04> RD_Seg04s { get; set; }
+    public DbSet<CS_Seg01> CS_Seg01s { get; set; }
+    public DbSet<CS_Seg02> CS_Seg02s { get; set; }
+    public DbSet<CS_Seg03> CS_Seg03s { get; set; }
+    public DbSet<MT_Seg01> MT_Seg01s { get; set; }
+    public DbSet<PK_Seg01> PK_Seg01s { get; set; }
+    public DbSet<TC_Seg01> TC_Seg01s { get; set; }
+    public DbSet<DS_Seg01> DS_Seg01s { get; set; }
+    public DbSet<AL_Seg01> AL_Seg01s { get; set; }
+    public DbSet<AD_Seg01> AD_Seg01s { get; set; }
+    public DbSet<RC_Seg01> RC_Seg01s { get; set; }
     #endregion
 
     public SoftPOSDbContext(DbContextOptions<SoftPOSDbContext> options)
@@ -104,7 +132,145 @@ public class SoftPOSDbContext :
            b.ConfigureByConvention(); //auto configure for the base class props
            b.Property(x => x.BufferMsg).IsRequired();
         });
-        
+        // segments DB
+        builder.Entity<PosTerminal>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "PosTerminal", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Terminal_ID);
+            b.Property(x => x.Terminal_ID).IsRequired();
+        });
+
+        builder.Entity<Category>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "Category", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Category_ID);
+            b.Property(x => x.Category_ID).IsRequired();
+            b.HasOne<PosTerminal>().WithMany().HasForeignKey(x => x.Terminal_ID);
+        });
+        // --- Retailer Data ---
+        builder.Entity<RD_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        builder.Entity<RD_Seg02>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg02", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        builder.Entity<RD_Seg03>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg03", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        builder.Entity<RD_Seg04>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg04", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Card Scheme ---
+        builder.Entity<CS_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        builder.Entity<CS_Seg02>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg02", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        builder.Entity<CS_Seg03>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg03", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Message Text ---
+        builder.Entity<MT_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "MT_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Public Key ---
+        builder.Entity<PK_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "PK_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Terminal Connection ---
+        builder.Entity<TC_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "TC_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Device Specific ---
+        builder.Entity<DS_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "DS_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- AID List ---
+        builder.Entity<AL_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "AL_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- AID Data --
+        builder.Entity<AD_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "AD_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+        // --- Revoke Certificates --- 
+        builder.Entity<RC_Seg01>(b =>
+        {
+            b.ToTable(SoftPOSConsts.DbTablePrefix + "RC_Seg01", SoftPOSConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasKey(x => x.Segment_ID);
+            b.Property(x => x.Segment_ID).IsRequired();
+            b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
+        });
+
         //builder.Entity<YourEntity>(b =>
         //{
         //    b.ToTable(SoftPOSConsts.DbTablePrefix + "YourEntities", SoftPOSConsts.DbSchema);

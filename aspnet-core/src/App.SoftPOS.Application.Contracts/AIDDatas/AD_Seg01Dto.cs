@@ -4,15 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Volo.Abp.Domain.Entities;
 
 namespace App.SoftPOS.AIDDatas
 {
-    public class AD_Seg01 : Entity<string>
+    public class AD_Seg01Dto
     {
         //FK
         public string Category_ID { get; set; }
-        [Required]
+        
         public string Segment_ID { get; set; }
         public string AID { get; set; }
         public string AIDLabel { get; set; }

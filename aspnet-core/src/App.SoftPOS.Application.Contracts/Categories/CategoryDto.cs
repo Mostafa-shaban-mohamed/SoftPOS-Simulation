@@ -4,19 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Volo.Abp.Domain.Entities;
 
-namespace App.SoftPOS.RevokeCertificates
+namespace App.SoftPOS.Categories
 {
-    public class RC_Seg01 : Entity<string>
+    public class CategoryDto
     {
         //FK
+        public string Terminal_ID { get; set; }
         public string Category_ID { get; set; }
-        [Required]
         public string Segment_ID { get; set; }
-        public string RID { get; set; }
-        public string IDX { get; set; }
-        public string CertSerialNumber { get; set; }
-
     }
 }

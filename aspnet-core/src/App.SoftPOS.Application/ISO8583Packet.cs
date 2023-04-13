@@ -6,6 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using App.SoftPOS.AIDDatas;
+using App.SoftPOS.AIDLists;
+using App.SoftPOS.CardSchemas;
+using App.SoftPOS.DeviceSpecifics;
+using App.SoftPOS.MessageTexts;
+using App.SoftPOS.PublicKeys;
+using App.SoftPOS.RetailerDatas;
+using App.SoftPOS.RevokeCertificates;
+using App.SoftPOS.TerminalConnections;
+using Volo.Abp.Domain.Repositories;
 
 namespace App.SoftPOS
 {
@@ -285,13 +295,69 @@ namespace App.SoftPOS
     //handles ISO message packets
     public class ISO8583Packet
     {
+        //Repos
+        private readonly IRepository<RD_Seg01, string> _RD_Seg01Repo;
+        private readonly IRepository<RD_Seg02, string> _RD_Seg02Repo;
+        private readonly IRepository<RD_Seg03, string> _RD_Seg03Repo;
+        private readonly IRepository<RD_Seg04, string> _RD_Seg04Repo;
+
+        private readonly IRepository<CS_Seg01, string> _CS_Seg01Repo;
+        private readonly IRepository<CS_Seg02, string> _CS_Seg02Repo;
+        private readonly IRepository<CS_Seg03, string> _CS_Seg03Repo;
+
+        private readonly IRepository<MT_Seg01, string> _MT_Seg01Repo;
+
+        private readonly IRepository<PK_Seg01, string> _PK_Seg01Repo;
+
+        private readonly IRepository<TC_Seg01, string> _TC_Seg01Repo;
+
+        private readonly IRepository<DS_Seg01, string> _DS_Seg01Repo;
+
+        private readonly IRepository<AL_Seg01, string> _AL_Seg01Repo;
+
+        private readonly IRepository<AD_Seg01, string> _AD_Seg01Repo;
+
+        private readonly IRepository<RC_Seg01, string> _RC_Seg01Repo;
+
+
         //store in DE Array
         public string[] DE { get; set; } = new string[128];
         //HS
         public Dictionary<int, string> Data_Elements = new Dictionary<int, string>();
 
-        public ISO8583Packet()
+        public ISO8583Packet(/*IRepository<RD_Seg01, string> RDrepo1
+            , IRepository<RD_Seg02, string> RDrepo2
+            , IRepository<RD_Seg03, string> RDrepo3
+            , IRepository<RD_Seg04, string> RDrepo4
+
+            , IRepository<CS_Seg01, string> CSrepo1
+            , IRepository<CS_Seg02, string> CSrepo2
+            , IRepository<CS_Seg03, string> CSrepo3
+
+            , IRepository<MT_Seg01, string> MTrepo1
+
+            , IRepository<PK_Seg01, string> PKrepo1
+
+            , IRepository<TC_Seg01, string> TCrepo1
+
+            , IRepository<DS_Seg01, string> DSrepo1
+
+            , IRepository<AL_Seg01, string> ALrepo1
+
+            , IRepository<AD_Seg01, string> ADrepo1
+
+            , IRepository<RC_Seg01, string> RCrepo1*/)
         {
+            /*_RD_Seg01Repo = RDrepo1; _RD_Seg02Repo = RDrepo2; _RD_Seg03Repo = RDrepo3; _RD_Seg04Repo = RDrepo4;
+            _CS_Seg01Repo = CSrepo1; _CS_Seg02Repo = CSrepo2; _CS_Seg03Repo = CSrepo3;
+            _MT_Seg01Repo = MTrepo1;
+            _PK_Seg01Repo = PKrepo1;
+            _TC_Seg01Repo = TCrepo1;
+            _DS_Seg01Repo = DSrepo1;
+            _AD_Seg01Repo = ADrepo1;
+            _AL_Seg01Repo = ALrepo1;
+            _RC_Seg01Repo = RCrepo1;*/
+
             Data_Elements.Add(1, "an 32");
             Data_Elements.Add(2, "n .. 19");
             Data_Elements.Add(3, "n 6");
@@ -591,7 +657,6 @@ namespace App.SoftPOS
                         {
                             ascii += '@';
                         }
-
                         //end last segment
                         isSeg = false;
                         if (!segments.TryAdd(segNumber, segment.ToString()))
@@ -611,11 +676,11 @@ namespace App.SoftPOS
                     {
                         if (isSeg)
                         {
-                            segment.Append(", ");
+                            segment.Append(',');
                         }
                         else
                         {
-                            ascii += ", ";
+                            ascii += ",";
                         }
                     }
                     else
@@ -641,7 +706,7 @@ namespace App.SoftPOS
                         }
                     }
                 }
-                //last segment
+                //add last segment to hs of segments
                 if (!segments.TryAdd(segNumber, segment.ToString()))
                 {
                     segments[segNumber] += "\n" + segment.ToString();
@@ -651,6 +716,9 @@ namespace App.SoftPOS
                 {
                     if (!string.IsNullOrEmpty(s.Value))
                     {
+                        //save data of each segment in database
+                        SegmentInDB(s.Key, s.Value);
+                        //assign each segment to ascii string
                         ascii += s.Value + "\n\n"; //end of segment
                     }
                 }
@@ -1059,6 +1127,247 @@ namespace App.SoftPOS
             }
 
             return message;
+        }
+    
+        private static void SegmentInDB(string segNumber, string segmentString)
+        {
+            //prepare the string for it
+            var segArray = segmentString.Split("\n");
+            //identify which seg and category this segment is
+            segNumber = ConvertHexToAscii(segNumber);
+            if (segNumber == "11")
+            {
+                var RetailerDataSeg01Dto = new RD_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    RetailerDataSeg01Dto.NextLoad = EachSeg[0];
+                    RetailerDataSeg01Dto.ReconciliationTime = EachSeg[1];
+                    RetailerDataSeg01Dto.ArabicName = EachSeg[2];
+                    RetailerDataSeg01Dto.EnglishNumber = EachSeg[3];
+                    RetailerDataSeg01Dto.EnglishName = EachSeg[4];
+                    RetailerDataSeg01Dto.LanguageIndicator = EachSeg[5];
+                    RetailerDataSeg01Dto.TerminalCurrencyCode = EachSeg[6];
+                    RetailerDataSeg01Dto.TerminalCountryCode = EachSeg[7];
+                    RetailerDataSeg01Dto.TransactionCurrencyExponent = EachSeg[8];
+                    RetailerDataSeg01Dto.CurrencySymbolArabic = EachSeg[9];
+                    RetailerDataSeg01Dto.CurrencySymbolEnglish = EachSeg[10];
+                    RetailerDataSeg01Dto.ReceiptArabic01 = EachSeg[11];
+                    RetailerDataSeg01Dto.ReceiptArabic02 = EachSeg[12];
+                    RetailerDataSeg01Dto.ReceiptEnglish01 = EachSeg[13];
+                    RetailerDataSeg01Dto.ReceiptEnglish02 = EachSeg[14];
+                }
+            }
+            else if (segNumber == "12")
+            {
+                var SegDto = new RD_Seg02Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.AddressArabic01 = EachSeg[0];
+                    SegDto.AddressEnglish01 = EachSeg[1];
+                }
+            }
+            else if (segNumber == "13")
+            {
+                var SegDto = new RD_Seg03Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.AddressArabic02 = EachSeg[0];
+                    SegDto.AddressEnglish02 = EachSeg[1];
+                }
+            }
+            else if (segNumber == "14")
+            {
+                var SegDto = new RD_Seg04Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.TerminalCapability = EachSeg[0];
+                    SegDto.AdditionalTerminalCapability = EachSeg[1];
+                    SegDto.DownloadPhoneNumber = EachSeg[2];
+                    SegDto.EMVTerminalType = EachSeg[3];
+                    SegDto.AutomicLoad = EachSeg[4];
+                    SegDto.SAFRetryLimit = EachSeg[5];
+                    SegDto.SAFDefaultMessageTransmissionNumber = EachSeg[6];
+                }
+            }
+            else if (segNumber == "21")
+            {
+                var SegDto = new CS_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.CardSchemeID = EachSeg[0];
+                    SegDto.CardSchemeNameArabic = EachSeg[1];
+                    SegDto.CardSchemeNameEnglish = EachSeg[2];
+                    SegDto.CardSchemeAcquirerID = EachSeg[3];
+                    SegDto.MerchantCategoryCode = EachSeg[4];
+                    SegDto.MerchantID = EachSeg[5];
+                    SegDto.TerminalID = EachSeg[6];
+                    SegDto.EnableEMV = EachSeg[7];
+                    SegDto.CheckServiceCode = EachSeg[8];
+                    SegDto.OfflineRefundAuthorization = EachSeg[9];
+                }
+            }
+            else if (segNumber == "22")
+            {
+                var SegDto = new CS_Seg02Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.CardSchemeID = EachSeg[0];
+                    SegDto.TransactionsAllowed = EachSeg[1];
+                    SegDto.CardholderAuthentication = EachSeg[2];
+                    SegDto.SupervisorFunctions = EachSeg[3];
+                    SegDto.ManualEntryAllowed = EachSeg[4];
+                    SegDto.FloorlimitIndicator = EachSeg[5];
+                    SegDto.TerminalFloorLimit = EachSeg[6];
+                    SegDto.TerminalFloorLimitFallBack = EachSeg[7];
+                    SegDto.MaxCashBack = EachSeg[8];
+                    SegDto.MaxTransactionAmountIndicator = EachSeg[9];
+                    SegDto.MaxAmountAllowed = EachSeg[10];
+                    SegDto.LuhnCheck = EachSeg[11];
+                    SegDto.ExpiryDatePosition = EachSeg[12];
+                    SegDto.DelayCallSetUp = EachSeg[13];
+                }
+            }
+            else if (segNumber == "23")
+            {
+                var SegDto = new CS_Seg03Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.CardSchemeID = EachSeg[0];
+                    SegDto.CardRanges = EachSeg[1];
+                    SegDto.CardPrefixSequenceIndicator = EachSeg[2];
+                }
+            }
+            else if (segNumber == "31")
+            {
+                var SegDto = new MT_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.MessageCode = EachSeg[0];
+                    SegDto.DisplayCode = EachSeg[1];
+                    SegDto.MessageTextArabic = EachSeg[2];
+                    SegDto.MessageTextEnglish = EachSeg[3];
+                }
+            }
+            else if (segNumber == "41")
+            {
+                var SegDto = new PK_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.RID = EachSeg[0];
+                    SegDto.KeyIndex = EachSeg[1];
+                    SegDto.HashID = EachSeg[2];
+                    SegDto.DigitalSignatureID = EachSeg[3];
+                    SegDto.PublicKey = EachSeg[4];
+                    SegDto.Exponent = EachSeg[5];
+                    SegDto.CheckSum = EachSeg[6];
+                    SegDto.CAPublicKeyLength = EachSeg[7];
+                    SegDto.CAPublicKeyExpiryDate = EachSeg[8];
+                }
+            }
+            else if (segNumber == "51")
+            {
+                var SegDto = new TC_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.Priority = EachSeg[0];
+                    SegDto.CommunicationType = EachSeg[1];
+                    SegDto.GPRSDialNumber = EachSeg[2];
+                    SegDto.GPRSAccessPointName = EachSeg[3];
+                    SegDto.ConnectTimeForGPRSPhone = EachSeg[4];
+                    SegDto.NetworkIPAddress = EachSeg[5];
+                    SegDto.NetworkTCPport = EachSeg[6];
+                    SegDto.DialAttemptsToNetwork = EachSeg[7];
+                    SegDto.ResponseTimeout = EachSeg[8];
+                    SegDto.SSLCertificateFile = EachSeg[9];
+                }
+            }
+            else if (segNumber == "61")
+            {
+                var SegDto = new DS_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.Data = EachSeg[0];
+                    SegDto.CardScheme01 = EachSeg[1];
+                    SegDto.TerminalContactlessTransactionLimit01 = EachSeg[2];
+                    SegDto.TerminalCVMRequiredLimit01 = EachSeg[3];
+                    SegDto.TerminalContactlessFloorLimit01 = EachSeg[4];
+                    SegDto.CardScheme02 = EachSeg[5];
+                    SegDto.TerminalContactlessTransactionLimit02 = EachSeg[6];
+                    SegDto.TerminalCVMRequiredLimit02 = EachSeg[7];
+                    SegDto.TerminalContactlessFloorLimit02 = EachSeg[8];
+                    SegDto.CardScheme03 = EachSeg[9];
+                    SegDto.TerminalContactlessTransactionLimit03 = EachSeg[10];
+                    SegDto.TerminalCVMRequiredLimit03 = EachSeg[11];
+                    SegDto.TerminalContactlessFloorLimit03 = EachSeg[12];
+                    SegDto.MaxSAFDepth = EachSeg[13];
+                    SegDto.MaxSAFCumualtiveAmount = EachSeg[14];
+                    SegDto.IdleTime = EachSeg[15];
+                    SegDto.MaxReconciliationAmount = EachSeg[16];
+                    SegDto.MaxTransactionsProcessed = EachSeg[17];
+                    SegDto.QRCodePrintIndicator = EachSeg[18];
+                }
+            }
+            else if (segNumber == "71")
+            {
+                var SegDto = new AL_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.AID01 = EachSeg[0];
+                    SegDto.AID02 = EachSeg[1];
+                    SegDto.AID03 = EachSeg[2];
+                    SegDto.AID04 = EachSeg[3];
+                    SegDto.AID05 = EachSeg[4];
+                    SegDto.AID06 = EachSeg[5];
+                    SegDto.AID07 = EachSeg[6];
+                    SegDto.AID08 = EachSeg[7];
+                    SegDto.AID09 = EachSeg[8];
+                    SegDto.AID010 = EachSeg[9];
+                }
+            }
+            else if (segNumber == "81")
+            {
+                var SegDto = new AD_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.AID = EachSeg[0];
+                    SegDto.AIDLabel = EachSeg[1];
+                    SegDto.TerminalAIDVersionNumbers = EachSeg[2];
+                    SegDto.ExactOnlySelection = EachSeg[3];
+                    SegDto.SkipEMVProcessing = EachSeg[4];
+                    SegDto.DefaultTDOL = EachSeg[5];
+                    SegDto.DefaultDDOL = EachSeg[6];
+                    SegDto.EMVAdditionalTags = EachSeg[7];
+                    SegDto.DenialActionCode = EachSeg[8];
+                    SegDto.OnlineActionCode = EachSeg[9];
+                    SegDto.ThresholdValueForBaisedRandomSelection = EachSeg[10];
+                    SegDto.TargetPercentage = EachSeg[11];
+                    SegDto.MaxTargetPercentageForBasiedRandomSelection = EachSeg[12];
+                }
+            }
+            else if (segNumber == "91")
+            {
+                var SegDto = new RC_Seg01Dto();
+                foreach (var s in segArray)
+                {
+                    var EachSeg = s.Split(',');
+                    SegDto.RID = EachSeg[0];
+                    SegDto.IDX = EachSeg[1];
+                    SegDto.CertSerialNumber = EachSeg[2];
+                }
+            }
         }
     }
 }

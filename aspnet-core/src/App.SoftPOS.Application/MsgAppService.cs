@@ -12,12 +12,25 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Polly.Caching;
+using App.SoftPOS.MTIs;
+using App.SoftPOS.RetailerDatas;
+using App.SoftPOS.CardSchemas;
+using App.SoftPOS.MessageTexts;
+using App.SoftPOS.PublicKeys;
+using App.SoftPOS.TerminalConnections;
+using App.SoftPOS.DeviceSpecifics;
+using App.SoftPOS.AIDLists;
+using App.SoftPOS.AIDDatas;
+using App.SoftPOS.RevokeCertificates;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace App.SoftPOS
 {
     public class MsgAppService : CrudAppService<ISOMsg, ISOMsgDto, Guid, PagedAndSortedResultRequestDto>, ImsgAppService
     {
-        public MsgAppService(IRepository<ISOMsg, Guid> repository) : base(repository)
+        public MsgAppService(IRepository<ISOMsg, Guid> repository) 
+            : base(repository)
         {
             // GetPolicyName = SourceCodePermissions.Types.Default;
             // GetListPolicyName = SourceCodePermissions.Types.Default;
@@ -54,7 +67,12 @@ namespace App.SoftPOS
                 var DE = ISOMsgHex(msg, mti: out string mti);
                 ISO8583Packet packet = new();
                 var message = packet.ISOMobileMessage(DE, mti: mti);
-                var options = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+                var options = new JsonSerializerOptions 
+                { 
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Arabic)
+                };
                 string jsonString = JsonSerializer.Serialize(message, options);
 
                 return jsonString;
