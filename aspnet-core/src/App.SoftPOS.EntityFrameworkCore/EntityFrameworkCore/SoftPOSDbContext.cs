@@ -137,7 +137,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "PosTerminal", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Terminal_ID);
             b.Property(x => x.Terminal_ID).IsRequired();
         });
 
@@ -145,7 +144,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "Category", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Category_ID);
             b.Property(x => x.Category_ID).IsRequired();
             b.HasOne<PosTerminal>().WithMany().HasForeignKey(x => x.Terminal_ID);
         });
@@ -154,7 +152,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -162,7 +159,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg02", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -170,7 +166,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg03", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -178,7 +173,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "RD_Seg04", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -187,7 +181,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -195,7 +188,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg02", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -203,7 +195,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "CS_Seg03", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -212,7 +203,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "MT_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -221,7 +211,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "PK_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -230,7 +219,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "TC_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -239,7 +227,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "DS_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -248,7 +235,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "AL_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -257,7 +243,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "AD_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });
@@ -266,7 +251,6 @@ public class SoftPOSDbContext :
         {
             b.ToTable(SoftPOSConsts.DbTablePrefix + "RC_Seg01", SoftPOSConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.HasKey(x => x.Segment_ID);
             b.Property(x => x.Segment_ID).IsRequired();
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.Category_ID);
         });

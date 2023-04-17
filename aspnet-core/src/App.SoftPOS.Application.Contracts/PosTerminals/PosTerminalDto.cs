@@ -12,14 +12,14 @@ namespace App.SoftPOS.PosTerminals
         
         public string Terminal_ID { get; set; }
 
-        public string RetailerData_ID { get; set; }
-        public string CardSchema_ID { get; set; }
-        public string MessageText_ID { get; set; }
-        public string PublicKey_ID { get; set; }
-        public string TerminalConnection_ID { get; set; }
-        public string DeviceSpecific_ID { get; set; }
-        public string AIDList_ID { get; set; }
-        public string AIDData_ID { get; set; }
-        public string RevokeCertificates_ID { get; set; }
+        public string? RetailerData_ID { get; set; }
+        public string? CardSchema_ID { get; set; }
+        public string? MessageText_ID { get; set; }
+        public string? PublicKey_ID { get; set; }
+        public string? TerminalConnection_ID { get; set; }
+        public string? DeviceSpecific_ID { get; set; }
+        public string? AIDList_ID { get; set; }
+        public string? AIDData_ID { get; set; }
+        public string? RevokeCertificates_ID { get; set; }
     }
 }

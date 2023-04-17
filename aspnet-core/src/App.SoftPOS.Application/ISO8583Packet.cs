@@ -16,6 +16,15 @@ using App.SoftPOS.RetailerDatas;
 using App.SoftPOS.RevokeCertificates;
 using App.SoftPOS.TerminalConnections;
 using Volo.Abp.Domain.Repositories;
+using AutoMapper.Internal.Mappers;
+using App.SoftPOS.Categories;
+using App.SoftPOS.PosTerminals;
+using Microsoft.IdentityModel.Tokens;
+using App.SoftPOS.Segment;
+using Volo.Abp.Uow;
+using Volo.Abp.ObjectMapping;
+using Volo.Abp.Application.Services;
+using Volo.Abp.Modularity;
 
 namespace App.SoftPOS
 {
@@ -48,7 +57,6 @@ namespace App.SoftPOS
         //DE 128
         public string MAC02 { get; set; }
     }
-
 
     public class Message
     {
@@ -293,31 +301,10 @@ namespace App.SoftPOS
     }
 
     //handles ISO message packets
-    public class ISO8583Packet
+    public class ISO8583Packet : ApplicationService
     {
         //Repos
-        private readonly IRepository<RD_Seg01, string> _RD_Seg01Repo;
-        private readonly IRepository<RD_Seg02, string> _RD_Seg02Repo;
-        private readonly IRepository<RD_Seg03, string> _RD_Seg03Repo;
-        private readonly IRepository<RD_Seg04, string> _RD_Seg04Repo;
-
-        private readonly IRepository<CS_Seg01, string> _CS_Seg01Repo;
-        private readonly IRepository<CS_Seg02, string> _CS_Seg02Repo;
-        private readonly IRepository<CS_Seg03, string> _CS_Seg03Repo;
-
-        private readonly IRepository<MT_Seg01, string> _MT_Seg01Repo;
-
-        private readonly IRepository<PK_Seg01, string> _PK_Seg01Repo;
-
-        private readonly IRepository<TC_Seg01, string> _TC_Seg01Repo;
-
-        private readonly IRepository<DS_Seg01, string> _DS_Seg01Repo;
-
-        private readonly IRepository<AL_Seg01, string> _AL_Seg01Repo;
-
-        private readonly IRepository<AD_Seg01, string> _AD_Seg01Repo;
-
-        private readonly IRepository<RC_Seg01, string> _RC_Seg01Repo;
+        private readonly IRepository<RD_Seg01, string> _RD_Seg01Repository;
 
 
         //store in DE Array
@@ -325,39 +312,11 @@ namespace App.SoftPOS
         //HS
         public Dictionary<int, string> Data_Elements = new Dictionary<int, string>();
 
-        public ISO8583Packet(/*IRepository<RD_Seg01, string> RDrepo1
-            , IRepository<RD_Seg02, string> RDrepo2
-            , IRepository<RD_Seg03, string> RDrepo3
-            , IRepository<RD_Seg04, string> RDrepo4
+        //assign Cat_ID manaully
+        public string CatgeoryID = "41055277-cce8-37d7-bb37-39f62806960b";
 
-            , IRepository<CS_Seg01, string> CSrepo1
-            , IRepository<CS_Seg02, string> CSrepo2
-            , IRepository<CS_Seg03, string> CSrepo3
-
-            , IRepository<MT_Seg01, string> MTrepo1
-
-            , IRepository<PK_Seg01, string> PKrepo1
-
-            , IRepository<TC_Seg01, string> TCrepo1
-
-            , IRepository<DS_Seg01, string> DSrepo1
-
-            , IRepository<AL_Seg01, string> ALrepo1
-
-            , IRepository<AD_Seg01, string> ADrepo1
-
-            , IRepository<RC_Seg01, string> RCrepo1*/)
+        public ISO8583Packet()
         {
-            /*_RD_Seg01Repo = RDrepo1; _RD_Seg02Repo = RDrepo2; _RD_Seg03Repo = RDrepo3; _RD_Seg04Repo = RDrepo4;
-            _CS_Seg01Repo = CSrepo1; _CS_Seg02Repo = CSrepo2; _CS_Seg03Repo = CSrepo3;
-            _MT_Seg01Repo = MTrepo1;
-            _PK_Seg01Repo = PKrepo1;
-            _TC_Seg01Repo = TCrepo1;
-            _DS_Seg01Repo = DSrepo1;
-            _AD_Seg01Repo = ADrepo1;
-            _AL_Seg01Repo = ALrepo1;
-            _RC_Seg01Repo = RCrepo1;*/
-
             Data_Elements.Add(1, "an 32");
             Data_Elements.Add(2, "n .. 19");
             Data_Elements.Add(3, "n 6");
@@ -488,8 +447,9 @@ namespace App.SoftPOS
             Data_Elements.Add(128, "b 8");
         }
 
-        //msg = Data_Element_Type(Data_Element[i], msg, out DE[i]) ## after execluding DE part
-        public string Data_Element_Type(string type, string msg, out string DE)
+        //msg = Data_Element_Type(Data_Element[i], msg, DE[i]) ## after execluding DE part
+        //tuple.item1 = DE, tuple.item2 = msg
+        public async Task<Tuple<string, string>> Data_Element_Type(string type, string msg, string DE)
         {
             List<string> typeConfig = new List<string>();
             typeConfig = type.Split(" ").ToList();
@@ -558,36 +518,36 @@ namespace App.SoftPOS
                         {
                             string p = msg.Substring(0, PrefixCount * 2);
                             msg = msg.RemovePreFix(p);
-                            p = ConvertHexToAscii(p);
+                            p = await ConvertHexToAscii(p);
                             isDigit = int.TryParse(p, out x);
                         }
-
                         //Get DE
                         if (isDigit && count > x)
                         {
-                            Res = getDE(msg, x, CharType);
+                            Res = await getDE(msg, x, CharType);
                         }
                         else
                         {
-                            Res = getDE(msg, count, CharType);
+                            Res = await getDE(msg, count, CharType);
                         }
                     }
                 }
             }
             DE = Res[1];
             msg = msg.RemovePreFix(Res[0]);
-            return msg;
+            Tuple<string, string> tuple = new(DE, msg);
+            return tuple;
         }
 
         //DE = getDE(msg, count, CharType) ## before Converting to ascii 
-        public string[] getDE(string msg, int count, string CharType) // 0 => msg.Remove, 1 => DE 
+        public async Task<string[]> getDE(string msg, int count, string CharType) // 0 => msg.Remove, 1 => DE 
         {
             string res = "";
             string DE = "";
             if (CharType == "Numeric" || CharType == "Alpha, Numeric & Special")
             {
                 res = msg.Substring(0, count * 2);
-                DE = ConvertHexToAscii(res);
+                DE = await ConvertHexToAscii(res);
             }
             else if (CharType == "Alpha")
             {
@@ -597,7 +557,7 @@ namespace App.SoftPOS
             else if (CharType == "AlphaNumeric")
             {
                 res = msg.Substring(0, count * 2);
-                DE = ConvertHexToAscii(res);
+                DE = await ConvertHexToAscii(res);
             }
             else if (CharType == "Numeric & Special")
             {
@@ -619,7 +579,7 @@ namespace App.SoftPOS
                 if (int.TryParse(msg[0].ToString(), out _))
                 {
                     res = msg.Substring(0, count * 2);
-                    DE = ConvertHexToAscii(msg.Substring(0, count * 2));
+                    DE = await ConvertHexToAscii(msg.Substring(0, count * 2));
                 }
                 else
                 {
@@ -635,8 +595,9 @@ namespace App.SoftPOS
         }
 
         //GET n data elements (n)
-        public static string ConvertHexToAscii(String hexString)
+        public async Task<string> ConvertHexToAscii(String hexString)
         {
+            var packet = new ISO8583Packet();
             try
             {
                 string ascii = string.Empty;
@@ -716,8 +677,8 @@ namespace App.SoftPOS
                 {
                     if (!string.IsNullOrEmpty(s.Value))
                     {
-                        //save data of each segment in database
-                        SegmentInDB(s.Key, s.Value);
+                        //save data of each segment in database ------------------------
+                        await packet.SegmentInDB(s.Key, s.Value);
                         //assign each segment to ascii string
                         ascii += s.Value + "\n\n"; //end of segment
                     }
@@ -733,9 +694,9 @@ namespace App.SoftPOS
         {
             var message = new Message();
             message.Mti_Code = mti;
-            for(int i = 0; i < DE.Length; i++)
+            for (int i = 0; i < DE.Length; i++)
             {
-                switch (i+1)
+                switch (i + 1)
                 {
                     case 1:
                         message.Bitmap = DE[i];
@@ -1125,62 +1086,87 @@ namespace App.SoftPOS
                         break;
                 }
             }
-
             return message;
         }
-    
-        private static void SegmentInDB(string segNumber, string segmentString)
+
+        private async Task SegmentInDB(string segNumber, string segmentString)
         {
             //prepare the string for it
             var segArray = segmentString.Split("\n");
             //identify which seg and category this segment is
-            segNumber = ConvertHexToAscii(segNumber);
+            segNumber = await ConvertHexToAscii(segNumber);
             if (segNumber == "11")
             {
-                var RetailerDataSeg01Dto = new RD_Seg01Dto();
+
+                int i = 0;
                 foreach (var s in segArray)
                 {
+                    //RetailerDataAppService retailerDataAppService = new(_RD_Seg01Repository);
+                    //await retailerDataAppService.GetSeg01(s);
+
                     var EachSeg = s.Split(',');
-                    RetailerDataSeg01Dto.NextLoad = EachSeg[0];
-                    RetailerDataSeg01Dto.ReconciliationTime = EachSeg[1];
-                    RetailerDataSeg01Dto.ArabicName = EachSeg[2];
-                    RetailerDataSeg01Dto.EnglishNumber = EachSeg[3];
-                    RetailerDataSeg01Dto.EnglishName = EachSeg[4];
-                    RetailerDataSeg01Dto.LanguageIndicator = EachSeg[5];
-                    RetailerDataSeg01Dto.TerminalCurrencyCode = EachSeg[6];
-                    RetailerDataSeg01Dto.TerminalCountryCode = EachSeg[7];
-                    RetailerDataSeg01Dto.TransactionCurrencyExponent = EachSeg[8];
-                    RetailerDataSeg01Dto.CurrencySymbolArabic = EachSeg[9];
-                    RetailerDataSeg01Dto.CurrencySymbolEnglish = EachSeg[10];
-                    RetailerDataSeg01Dto.ReceiptArabic01 = EachSeg[11];
-                    RetailerDataSeg01Dto.ReceiptArabic02 = EachSeg[12];
-                    RetailerDataSeg01Dto.ReceiptEnglish01 = EachSeg[13];
-                    RetailerDataSeg01Dto.ReceiptEnglish02 = EachSeg[14];
+                    var RetailerDataSeg01 = new RD_Seg01Dto()
+                    {
+                        Id = Guid.NewGuid().ToString("N"),
+                        NextLoad = EachSeg[0],
+                        ReconciliationTime = EachSeg[1],
+                        ArabicName = EachSeg[2],
+                        EnglishNumber = EachSeg[3],
+                        EnglishName = EachSeg[4],
+                        LanguageIndicator = EachSeg[5],
+                        TerminalCurrencyCode = EachSeg[6],
+                        TerminalCountryCode = EachSeg[7],
+                        TransactionCurrencyExponent = EachSeg[8],
+                        CurrencySymbolArabic = EachSeg[9],
+                        CurrencySymbolEnglish = EachSeg[10],
+                        ReceiptArabic01 = EachSeg[11],
+                        ReceiptArabic02 = EachSeg[12],
+                        ReceiptEnglish01 = EachSeg[13],
+                        ReceiptEnglish02 = EachSeg[14],
+                        Category_ID = CatgeoryID,
+                        Segment_ID = "00000621-RD-Seg" + (i + 1).ToString("00")
+                    };
+                    /// -------------------------------------------
+                    var seg = ObjectMapper.Map<RD_Seg01Dto, RD_Seg01>(RetailerDataSeg01);
+                    await _RD_Seg01Repository.InsertAsync(seg, true);
+                    /// ---------------------------------------------
+                    i += 1;
                 }
             }
             else if (segNumber == "12")
             {
                 var SegDto = new RD_Seg02Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
                     SegDto.AddressArabic01 = EachSeg[0];
                     SegDto.AddressEnglish01 = EachSeg[1];
+
+                    SegDto.Category_ID = "00000621-RD";
+                    SegDto.Segment_ID = $"00000621-RD-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "13")
             {
                 var SegDto = new RD_Seg03Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
                     SegDto.AddressArabic02 = EachSeg[0];
                     SegDto.AddressEnglish02 = EachSeg[1];
+
+                    SegDto.Category_ID = "00000621-RD";
+                    SegDto.Segment_ID = $"00000621-RD-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "14")
             {
                 var SegDto = new RD_Seg04Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1191,11 +1177,16 @@ namespace App.SoftPOS
                     SegDto.AutomicLoad = EachSeg[4];
                     SegDto.SAFRetryLimit = EachSeg[5];
                     SegDto.SAFDefaultMessageTransmissionNumber = EachSeg[6];
+
+                    SegDto.Category_ID = "00000621-RD";
+                    SegDto.Segment_ID = $"00000621-RD-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "21")
             {
                 var SegDto = new CS_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1209,11 +1200,16 @@ namespace App.SoftPOS
                     SegDto.EnableEMV = EachSeg[7];
                     SegDto.CheckServiceCode = EachSeg[8];
                     SegDto.OfflineRefundAuthorization = EachSeg[9];
+
+                    SegDto.Category_ID = "00000621-CS";
+                    SegDto.Segment_ID = $"00000621-CS-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "22")
             {
                 var SegDto = new CS_Seg02Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1231,22 +1227,32 @@ namespace App.SoftPOS
                     SegDto.LuhnCheck = EachSeg[11];
                     SegDto.ExpiryDatePosition = EachSeg[12];
                     SegDto.DelayCallSetUp = EachSeg[13];
+
+                    SegDto.Category_ID = "00000621-CS";
+                    SegDto.Segment_ID = $"00000621-CS-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "23")
             {
                 var SegDto = new CS_Seg03Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
                     SegDto.CardSchemeID = EachSeg[0];
                     SegDto.CardRanges = EachSeg[1];
                     SegDto.CardPrefixSequenceIndicator = EachSeg[2];
+
+                    SegDto.Category_ID = "00000621-CS";
+                    SegDto.Segment_ID = $"00000621-CS-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "31")
             {
                 var SegDto = new MT_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1254,11 +1260,16 @@ namespace App.SoftPOS
                     SegDto.DisplayCode = EachSeg[1];
                     SegDto.MessageTextArabic = EachSeg[2];
                     SegDto.MessageTextEnglish = EachSeg[3];
+
+                    SegDto.Category_ID = "00000621-MT";
+                    SegDto.Segment_ID = $"00000621-MT-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "41")
             {
                 var SegDto = new PK_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1271,11 +1282,16 @@ namespace App.SoftPOS
                     SegDto.CheckSum = EachSeg[6];
                     SegDto.CAPublicKeyLength = EachSeg[7];
                     SegDto.CAPublicKeyExpiryDate = EachSeg[8];
+
+                    SegDto.Category_ID = "00000621-PK";
+                    SegDto.Segment_ID = $"00000621-PK-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "51")
             {
                 var SegDto = new TC_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1289,11 +1305,16 @@ namespace App.SoftPOS
                     SegDto.DialAttemptsToNetwork = EachSeg[7];
                     SegDto.ResponseTimeout = EachSeg[8];
                     SegDto.SSLCertificateFile = EachSeg[9];
+
+                    SegDto.Category_ID = "00000621-TC";
+                    SegDto.Segment_ID = $"00000621-TC-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "61")
             {
                 var SegDto = new DS_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1316,11 +1337,16 @@ namespace App.SoftPOS
                     SegDto.MaxReconciliationAmount = EachSeg[16];
                     SegDto.MaxTransactionsProcessed = EachSeg[17];
                     SegDto.QRCodePrintIndicator = EachSeg[18];
+
+                    SegDto.Category_ID = "00000621-DS";
+                    SegDto.Segment_ID = $"00000621-DS-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "71")
             {
                 var SegDto = new AL_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1334,11 +1360,16 @@ namespace App.SoftPOS
                     SegDto.AID08 = EachSeg[7];
                     SegDto.AID09 = EachSeg[8];
                     SegDto.AID010 = EachSeg[9];
+
+                    SegDto.Category_ID = "00000621-AL";
+                    SegDto.Segment_ID = $"00000621-AL-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "81")
             {
                 var SegDto = new AD_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
@@ -1355,17 +1386,26 @@ namespace App.SoftPOS
                     SegDto.ThresholdValueForBaisedRandomSelection = EachSeg[10];
                     SegDto.TargetPercentage = EachSeg[11];
                     SegDto.MaxTargetPercentageForBasiedRandomSelection = EachSeg[12];
+
+                    SegDto.Category_ID = "00000621-AD";
+                    SegDto.Segment_ID = $"00000621-AD-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
             else if (segNumber == "91")
             {
                 var SegDto = new RC_Seg01Dto();
+                int i = 0;
                 foreach (var s in segArray)
                 {
                     var EachSeg = s.Split(',');
                     SegDto.RID = EachSeg[0];
                     SegDto.IDX = EachSeg[1];
                     SegDto.CertSerialNumber = EachSeg[2];
+
+                    SegDto.Category_ID = "00000621-RC";
+                    SegDto.Segment_ID = $"00000621-RC-{segNumber}-Seg" + i.ToString("00");
+                    i += 1;
                 }
             }
         }

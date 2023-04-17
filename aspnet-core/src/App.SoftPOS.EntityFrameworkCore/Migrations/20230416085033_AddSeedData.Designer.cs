@@ -4,6 +4,7 @@ using App.SoftPOS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace App.SoftPOS.Migrations
 {
     [DbContext(typeof(SoftPOSDbContext))]
-    partial class SoftPOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230416085033_AddSeedData")]
+    partial class AddSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,7 +29,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.AIDDatas.AD_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AID")
@@ -65,15 +68,14 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MaxTargetPercentageForBasiedRandomSelection")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OnlineActionCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -93,7 +95,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -102,7 +104,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.AIDLists.AL_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AID01")
@@ -149,11 +151,10 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -162,7 +163,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.CardSchemas.CS_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CardSchemeAcquirerID")
@@ -193,6 +194,9 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MerchantCategoryCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -205,15 +209,11 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TerminalID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -222,7 +222,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.CardSchemas.CS_Seg02", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CardSchemeID")
@@ -249,6 +249,9 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LuhnCheck")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -269,10 +272,6 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("SupervisorFunctions")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -289,7 +288,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -298,7 +297,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.CardSchemas.CS_Seg03", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CardPrefixSequenceIndicator")
@@ -317,11 +316,10 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -330,18 +328,17 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.Categories.Category", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Category_ID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Category_ID")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Terminal_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Category_ID");
 
                     b.HasIndex("Terminal_ID");
 
@@ -350,7 +347,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.DeviceSpecifics.DS_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CardScheme01")
@@ -371,6 +368,9 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Data")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdleTime")
@@ -394,10 +394,6 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("QRCodePrintIndicator")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -437,7 +433,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -559,7 +555,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.MessageTexts.MT_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Category_ID")
@@ -568,6 +564,9 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("DisplayCode")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MessageCode")
@@ -582,11 +581,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -595,7 +590,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.PosTerminals.PosTerminal", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Terminal_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AIDData_ID")
@@ -608,6 +603,9 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceSpecific_ID")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MessageText_ID")
@@ -625,18 +623,14 @@ namespace App.SoftPOS.Migrations
                     b.Property<string>("TerminalConnection_ID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Terminal_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("Terminal_ID");
 
                     b.ToTable("AppPosTerminal", (string)null);
                 });
 
             modelBuilder.Entity("App.SoftPOS.PublicKeys.PK_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CAPublicKeyExpiryDate")
@@ -667,6 +661,9 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("KeyIndex")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -679,11 +676,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -692,7 +685,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.RetailerDatas.RD_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ArabicName")
@@ -717,6 +710,9 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("EnglishNumber")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LanguageIndicator")
@@ -747,10 +743,6 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TerminalCountryCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -763,7 +755,7 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -772,7 +764,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.RetailerDatas.RD_Seg02", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AddressArabic01")
@@ -787,11 +779,10 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -800,7 +791,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.RetailerDatas.RD_Seg03", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AddressArabic02")
@@ -815,11 +806,10 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -828,7 +818,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.RetailerDatas.RD_Seg04", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AdditionalTerminalCapability")
@@ -851,6 +841,9 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SAFDefaultMessageTransmissionNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -859,15 +852,11 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TerminalCapability")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -876,7 +865,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.RevokeCertificates.RC_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Category_ID")
@@ -891,15 +880,14 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("RID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 
@@ -908,7 +896,7 @@ namespace App.SoftPOS.Migrations
 
             modelBuilder.Entity("App.SoftPOS.TerminalConnections.TC_Seg01", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("Segment_ID")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("BaudRate")
@@ -955,6 +943,9 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NetworkIPAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -983,15 +974,11 @@ namespace App.SoftPOS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Segment_ID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("StopRate")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Segment_ID");
 
                     b.HasIndex("Category_ID");
 

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Volo.Abp.Domain.Entities;
 
 namespace App.SoftPOS.Categories
 {
@@ -12,6 +13,5 @@ namespace App.SoftPOS.Categories
         //FK
         public string Terminal_ID { get; set; }
         public string Category_ID { get; set; }
-        public string Segment_ID { get; set; }
     }
 }

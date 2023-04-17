@@ -11,17 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using Polly.Caching;
-using App.SoftPOS.MTIs;
-using App.SoftPOS.RetailerDatas;
-using App.SoftPOS.CardSchemas;
-using App.SoftPOS.MessageTexts;
-using App.SoftPOS.PublicKeys;
-using App.SoftPOS.TerminalConnections;
-using App.SoftPOS.DeviceSpecifics;
-using App.SoftPOS.AIDLists;
-using App.SoftPOS.AIDDatas;
-using App.SoftPOS.RevokeCertificates;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
@@ -57,14 +46,17 @@ namespace App.SoftPOS
         //}
 
         //request download parameters
-        public string? PostMobileRequest(MobileRequest json)
+        public async Task<string?> PostMobileRequest(MobileRequest json)
         {
             //get required response form file-system storing data
             var msg = Response(json.Last_Message_Number);
             //is msg valid
             if (!string.IsNullOrEmpty(msg))
             {
-                var DE = ISOMsgHex(msg, mti: out string mti);
+                string mti = "";
+                var tuple = await ISOMsgHex(msg, mti);
+                mti = tuple.Item1;
+                var DE = tuple.Item2;
                 ISO8583Packet packet = new();
                 var message = packet.ISOMobileMessage(DE, mti: mti);
                 var options = new JsonSerializerOptions 
@@ -81,9 +73,12 @@ namespace App.SoftPOS
         }
         
         //get JSON message for mobile app (API)
-        public string PostMessage([FromBody] string msg)
+        public async Task<string> PostMessage([FromBody] string msg)
         {
-            var DE = ISOMsgHex(msg, mti: out string mti);
+            string mti = "";
+            var tuple = await ISOMsgHex(msg, mti);
+            mti = tuple.Item1;
+            var DE = tuple.Item2;
             //get Message object returned with values
             ISO8583Packet packet = new ISO8583Packet();
             var message = packet.ISOMobileMessage(DE, mti: mti);
@@ -95,7 +90,7 @@ namespace App.SoftPOS
         }
 
         //get DE array of message (API)
-        public string[] GetISOMsgHex(string msg)
+        public async Task<string[]> GetISOMsgHex(string msg)
         {
             //get bitmap (primary & secondary)
             //mti, header                        
@@ -110,7 +105,10 @@ namespace App.SoftPOS
             for (int i = 0; i < packet.DE.Length; i++)
             {
                 if (packet.DE[i] == "Value")
-                    msg = packet.Data_Element_Type(packet.Data_Elements[i + 1], msg, out packet.DE[i]);
+                {
+                    var tuple = await packet.Data_Element_Type(packet.Data_Elements[i + 1], msg, packet.DE[i]);
+                    msg = tuple.Item1; packet.DE[i] = tuple.Item2;
+                }
             }
             return packet.DE;
         }
@@ -211,7 +209,7 @@ namespace App.SoftPOS
         }
 
         //internal method for DE array of message to be used in Mobile app
-        private static string[] ISOMsgHex(string msg, out string mti)
+        private async Task<Tuple<string, string[]>> ISOMsgHex(string msg, string mti)
         {
             //get bitmap (primary & secondary)
             //mti, header                        
@@ -227,9 +225,14 @@ namespace App.SoftPOS
             for (int i = 0; i < packet.DE.Length; i++)
             {
                 if (packet.DE[i] == "Value")
-                    msg = packet.Data_Element_Type(packet.Data_Elements[i + 1], msg, out packet.DE[i]);
+                {
+                    var tuple = await packet.Data_Element_Type(packet.Data_Elements[i + 1], msg, packet.DE[i]);
+                    msg = tuple.Item2; packet.DE[i] = tuple.Item1;
+                }
+                   
             }
-            return packet.DE;
+            Tuple<string, string[]> tuple1 = new Tuple<string, string[]>(mti, packet.DE);
+            return tuple1;
         }
 
         //convert from hex to ascii

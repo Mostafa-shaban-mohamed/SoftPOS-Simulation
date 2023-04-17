@@ -4,6 +4,7 @@ using App.SoftPOS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace App.SoftPOS.Migrations
 {
     [DbContext(typeof(SoftPOSDbContext))]
-    partial class SoftPOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230417094146_EditCatgoryID")]
+    partial class EditCatgoryID
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,7 +42,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DefaultActionCode")
                         .IsRequired()
@@ -95,8 +98,6 @@ namespace App.SoftPOS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category_ID");
-
                     b.ToTable("AppAD_Seg01", (string)null);
                 });
 
@@ -147,15 +148,13 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppAL_Seg01", (string)null);
                 });
@@ -183,7 +182,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CheckServiceCode")
                         .IsRequired()
@@ -215,8 +214,6 @@ namespace App.SoftPOS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category_ID");
-
                     b.ToTable("AppCS_Seg01", (string)null);
                 });
 
@@ -235,7 +232,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DelayCallSetUp")
                         .IsRequired()
@@ -291,8 +288,6 @@ namespace App.SoftPOS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category_ID");
-
                     b.ToTable("AppCS_Seg02", (string)null);
                 });
 
@@ -315,15 +310,13 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppCS_Seg03", (string)null);
                 });
@@ -367,7 +360,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Data")
                         .IsRequired()
@@ -438,8 +431,6 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppDS_Seg01", (string)null);
                 });
@@ -564,7 +555,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DisplayCode")
                         .IsRequired()
@@ -587,8 +578,6 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppMT_Seg01", (string)null);
                 });
@@ -649,7 +638,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CheckSum")
                         .IsRequired()
@@ -684,8 +673,6 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppPK_Seg01", (string)null);
                 });
@@ -785,15 +772,13 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppRD_Seg02", (string)null);
                 });
@@ -813,15 +798,13 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Segment_ID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppRD_Seg03", (string)null);
                 });
@@ -841,7 +824,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DownloadPhoneNumber")
                         .IsRequired()
@@ -869,8 +852,6 @@ namespace App.SoftPOS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category_ID");
-
                     b.ToTable("AppRD_Seg04", (string)null);
                 });
 
@@ -881,7 +862,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CertSerialNumber")
                         .IsRequired()
@@ -901,8 +882,6 @@ namespace App.SoftPOS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category_ID");
-
                     b.ToTable("AppRC_Seg01", (string)null);
                 });
 
@@ -917,7 +896,7 @@ namespace App.SoftPOS.Migrations
 
                     b.Property<string>("Category_ID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CommunicationType")
                         .IsRequired()
@@ -992,8 +971,6 @@ namespace App.SoftPOS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category_ID");
 
                     b.ToTable("AppTC_Seg01", (string)null);
                 });
@@ -2626,7 +2603,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2635,7 +2612,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2644,7 +2621,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2653,7 +2630,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2662,7 +2639,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2680,7 +2657,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2689,7 +2666,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2698,7 +2675,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2716,7 +2693,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2725,7 +2702,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2734,7 +2711,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2743,7 +2720,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2752,7 +2729,7 @@ namespace App.SoftPOS.Migrations
                 {
                     b.HasOne("App.SoftPOS.Categories.Category", null)
                         .WithMany()
-                        .HasForeignKey("Category_ID")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
